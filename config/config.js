@@ -9,7 +9,7 @@ var config = {
             name: 'imooc-movie'
         },
         port: process.env.PORT || 3000,
-        db: 'mongodb://localhost/imooc-movie-development'
+        db: 'mongodb://localhost/imooc-movie'
     },
 
     test: {
