@@ -2,7 +2,7 @@ var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
     Movie = mongoose.model('Movie');
-User = mongoose.model('User');
+    User = mongoose.model('User');
 
 module.exports = function(app) {
     app.use('/', router);
@@ -10,6 +10,8 @@ module.exports = function(app) {
 
 // index page
 router.get('/', function(req, res, next) {
+    console.log(req.session.user);
+
     Movie.find(function(err, movies) {
         if (err) throw err;
 
@@ -61,7 +63,7 @@ router.post('/user/signin', function(req, res, next) {
             if (err) throw err;
 
             if (isMatch) {
-                console.log('Password is matched');
+                req.session.user = user;
                 return res.redirect('/');
             } else
                 console.log('Password is not matched');
