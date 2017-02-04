@@ -2,31 +2,67 @@ var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
     Movie = mongoose.model('Movie');
+    User = mongoose.model('User');
 
-module.exports = function (app) {
+module.exports = function(app) {
     app.use('/', router);
 };
 
 // index page
-router.get('/', function (req, res, next) {
-    Movie.find(function (err, movies) {
+router.get('/', function(req, res, next) {
+    Movie.find(function(err, movies) {
         if (err) throw err;
 
-        res.render('page/index', {
+        res.render('pages/index', {
             title: 'imooc 首页',
             movies: movies
         });
     });
 });
 
-// detail page
-router.get('/movie/:id', function (req, res, next) {
-    var id = req.params.id;
+// signup
+router.post('/user/signup', function(req, res, next) {
+    var _user = req.body.user;
 
-    Movie.findById(id, function (err, movie) {
+    User.findOne({
+        name: _user.name
+    }, function(err, user) {
         if (err) throw err;
 
-        res.render('page/detail', {
+        if (user)
+            return res.redirect('/');
+        else {
+            var user = new User(_user);
+
+            user.save(function(err, user) {
+                if (err) return err;
+
+                res.redirect('/');
+            });
+        }
+    });
+});
+
+// userlist page
+router.get('/admin/userlist', function(req, res, next) {
+    User.fetch(function(err, users) {
+        if (err) throw err;
+
+        res.render('pages/userlist', {
+            title: 'imooc 用户列表页',
+            users: users
+        });
+    })
+});
+
+// detail page
+router.get('/movie/:id', function(req, res, next) {
+    var id = req.params.id;
+
+    Movie.findById(id, function(err, movie) {
+        if (err) throw err;
+
+        res.render('pages/detail', {
             title: 'imooc ' + movie.title,
             movie: movie
         });
@@ -34,8 +70,8 @@ router.get('/movie/:id', function (req, res, next) {
 });
 
 // admin page
-router.get('/admin/movie', function (req, res, next) {
-    res.render('page/admin', {
+router.get('/admin/movie', function(req, res, next) {
+    res.render('pages/admin', {
         title: 'imooc 后台录入页',
         movie: {
             title: '',
@@ -51,12 +87,12 @@ router.get('/admin/movie', function (req, res, next) {
 });
 
 // admin update movie
-router.get('/admin/update/:id', function (req, res, next) {
+router.get('/admin/update/:id', function(req, res, next) {
     var id = req.params.id;
 
     if (id) {
-        Movie.findById(id, function (err, movie) {
-            res.render('page/admin', {
+        Movie.findById(id, function(err, movie) {
+            res.render('pages/admin', {
                 title: 'imooc 后台更新页',
                 movie: movie
             });
@@ -65,17 +101,17 @@ router.get('/admin/update/:id', function (req, res, next) {
 });
 
 // admin post movie
-router.post('/admin/movie/new', function (req, res, next) {
+router.post('/admin/movie/new', function(req, res, next) {
     var id = req.body.movie._id;
     var movieObj = req.body.movie;
     var _movie;
 
     if (id !== 'undefined') {
-        Movie.findById(id, function (err, movie) {
+        Movie.findById(id, function(err, movie) {
             if (err) throw err;
 
             _movie = _.extend(movie, movieObj);
-            _movie.save(function (err, movie) {
+            _movie.save(function(err, movie) {
                 if (err) throw err;
 
                 res.redirect('/movie/' + movie._id);
@@ -93,7 +129,7 @@ router.post('/admin/movie/new', function (req, res, next) {
             flash: movieObj.flash
         });
 
-        _movie.save(function (err, movie) {
+        _movie.save(function(err, movie) {
             if (err) throw err;
 
             res.redirect('/movie/' + movie._id);
@@ -102,11 +138,11 @@ router.post('/admin/movie/new', function (req, res, next) {
 });
 
 // list page
-router.get('/admin/list', function (req, res, next) {
-    Movie.fetch(function (err, movies) {
+router.get('/admin/list', function(req, res, next) {
+    Movie.fetch(function(err, movies) {
         if (err) throw err;
 
-        res.render('page/list', {
+        res.render('pages/list', {
             title: 'imooc 列表页',
             movies: movies
         });
@@ -114,14 +150,18 @@ router.get('/admin/list', function (req, res, next) {
 })
 
 // list delete movie
-router.delete('/admin/list', function (req, res, next) {
+router.delete('/admin/list', function(req, res, next) {
     var id = req.query.id;
 
     if (id) {
-        Movie.remove({_id: id}, function (err, movie) {
+        Movie.remove({
+            _id: id
+        }, function(err, movie) {
             if (err) throw err;
 
-            res.json({success: 1});
+            res.json({
+                success: 1
+            });
         });
     }
 })
