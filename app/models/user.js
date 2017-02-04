@@ -25,6 +25,8 @@ var UserSchema = new Schema({
 
 // 保存前执行的相关逻辑
 UserSchema.pre('save', function(next) {
+    var user = this;
+
     if (this.isNew) {
         this.meta.createAt = this.meta.updateAt = Date.now();
     } else {
@@ -34,15 +36,24 @@ UserSchema.pre('save', function(next) {
     bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
         if (err) return next(err);
 
-        bcrypt.hash(this.password, salt, function(err, hash) {
+        bcrypt.hash(user.password, salt, function(err, hash) {
             if (err) return next(err);
 
-            this.password = hash;
+            user.password = hash;
             next();
         });
     });
-    next();
 });
+
+UserSchema.methods = {
+    comparePassword: function(_password, cb) {
+        bcrypt.compare(_password, this.password, function(err, isMatch) {
+            if (err) return cb(err);
+
+            cb(null, isMatch);
+        });
+    }
+};
 
 UserSchema.statics = {
     fetch: function(cb) {

@@ -2,7 +2,7 @@ var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
     Movie = mongoose.model('Movie');
-    User = mongoose.model('User');
+User = mongoose.model('User');
 
 module.exports = function(app) {
     app.use('/', router);
@@ -32,14 +32,40 @@ router.post('/user/signup', function(req, res, next) {
         if (user)
             return res.redirect('/');
         else {
-            var user = new User(_user);
+            user = new User(_user);
 
             user.save(function(err, user) {
-                if (err) return err;
+                if (err) throw err;
 
                 res.redirect('/');
             });
         }
+    });
+});
+
+// signin
+router.post('/user/signin', function(req, res, next) {
+    var _user = req.body.user;
+    var name = _user.name;
+    var password = _user.password;
+
+    User.findOne({
+        name: name
+    }, function(err, user) {
+        if (err) throw err;
+
+        if (!user)
+            return res.redirect('/');
+
+        user.comparePassword(password, function(err, isMatch) {
+            if (err) throw err;
+
+            if (isMatch) {
+                console.log('Password is matched');
+                return res.redirect('/');
+            } else
+                console.log('Password is not matched');
+        });
     });
 });
 
