@@ -2,7 +2,7 @@ var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
     Movie = mongoose.model('Movie');
-    User = mongoose.model('User');
+User = mongoose.model('User');
 
 module.exports = function(app) {
     app.use('/', router);
@@ -13,7 +13,8 @@ router.get('/', function(req, res, next) {
     console.log(req.session.user);
 
     Movie.find(function(err, movies) {
-        if (err) throw err;
+        if (err)
+            throw err;
 
         res.render('pages/index', {
             title: 'imooc 首页',
@@ -29,7 +30,8 @@ router.post('/user/signup', function(req, res, next) {
     User.findOne({
         name: _user.name
     }, function(err, user) {
-        if (err) throw err;
+        if (err)
+            throw err;
 
         if (user)
             return res.redirect('/');
@@ -37,7 +39,8 @@ router.post('/user/signup', function(req, res, next) {
             user = new User(_user);
 
             user.save(function(err, user) {
-                if (err) throw err;
+                if (err)
+                    throw err;
 
                 res.redirect('/');
             });
@@ -54,27 +57,38 @@ router.post('/user/signin', function(req, res, next) {
     User.findOne({
         name: name
     }, function(err, user) {
-        if (err) throw err;
+        if (err)
+            throw err;
 
         if (!user)
             return res.redirect('/');
 
         user.comparePassword(password, function(err, isMatch) {
-            if (err) throw err;
+            if (err)
+                throw err;
 
             if (isMatch) {
                 req.session.user = user;
                 return res.redirect('/');
             } else
                 console.log('Password is not matched');
-        });
+            }
+        );
     });
+});
+
+// logout
+router.get('/logout', function(req, res, next) {
+    delete req.session.user;
+
+    res.redirect('/');
 });
 
 // userlist page
 router.get('/admin/userlist', function(req, res, next) {
     User.fetch(function(err, users) {
-        if (err) throw err;
+        if (err)
+            throw err;
 
         res.render('pages/userlist', {
             title: 'imooc 用户列表页',
@@ -88,7 +102,8 @@ router.get('/movie/:id', function(req, res, next) {
     var id = req.params.id;
 
     Movie.findById(id, function(err, movie) {
-        if (err) throw err;
+        if (err)
+            throw err;
 
         res.render('pages/detail', {
             title: 'imooc ' + movie.title,
@@ -136,11 +151,13 @@ router.post('/admin/movie/new', function(req, res, next) {
 
     if (id !== 'undefined') {
         Movie.findById(id, function(err, movie) {
-            if (err) throw err;
+            if (err)
+                throw err;
 
             _movie = _.extend(movie, movieObj);
             _movie.save(function(err, movie) {
-                if (err) throw err;
+                if (err)
+                    throw err;
 
                 res.redirect('/movie/' + movie._id);
             });
@@ -158,7 +175,8 @@ router.post('/admin/movie/new', function(req, res, next) {
         });
 
         _movie.save(function(err, movie) {
-            if (err) throw err;
+            if (err)
+                throw err;
 
             res.redirect('/movie/' + movie._id);
         });
@@ -168,7 +186,8 @@ router.post('/admin/movie/new', function(req, res, next) {
 // list page
 router.get('/admin/list', function(req, res, next) {
     Movie.fetch(function(err, movies) {
-        if (err) throw err;
+        if (err)
+            throw err;
 
         res.render('pages/list', {
             title: 'imooc 列表页',
@@ -185,11 +204,10 @@ router.delete('/admin/list', function(req, res, next) {
         Movie.remove({
             _id: id
         }, function(err, movie) {
-            if (err) throw err;
+            if (err)
+                throw err;
 
-            res.json({
-                success: 1
-            });
+            res.json({success: 1});
         });
     }
 })

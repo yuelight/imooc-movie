@@ -23,19 +23,23 @@ module.exports = function(app, config) {
     // app.use(favicon(config.root + '/public/img/favicon.ico'));
     app.use(logger('dev'));
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({
-        extended: true
-    }));
+    app.use(bodyParser.urlencoded({extended: true}));
     app.use(cookieParser());
     app.use(session({
         secret: 'imooc',
         resave: false,
         saveUninitialized: true,
-        store: new mongoStore({
-            url: config.db,
-            collection: 'sessions'
-        })
+        store: new mongoStore({url: config.db, collection: 'sessions'})
     }));
+    app.use(function(req, res, next) {
+        var _user = req.session.user;
+        if (_user) {
+            app.locals.user = _user;
+        } else {
+            delete app.locals.user;
+        }
+        next();
+    });
     app.use(compress());
     app.use(express.static(config.root + '/public'));
     app.use(methodOverride());
