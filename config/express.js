@@ -33,11 +33,8 @@ module.exports = function(app, config) {
     }));
     app.use(function(req, res, next) {
         var _user = req.session.user;
-        if (_user) {
-            app.locals.user = _user;
-        } else {
-            delete app.locals.user;
-        }
+
+        app.locals.user = _user;
         next();
     });
     app.use(compress());
@@ -66,6 +63,7 @@ module.exports = function(app, config) {
                 title: 'error'
             });
         });
+        app.locals.pretty = true;
     }
 
     app.use(function(err, req, res, next) {

@@ -4,7 +4,7 @@ $(function() {
         var id = target.data('id');
         var tr = $('.item-id-' + id);
         $.ajax({
-                url: '/admin/list?id=' + id,
+                url: '/admin/movie/list?id=' + id,
                 type: 'DELETE'
             })
             .done(function(result) {

@@ -1,8 +1,8 @@
 var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
-    Movie = mongoose.model('Movie');
-User = mongoose.model('User');
+    Movie = mongoose.model('Movie'),
+    User = mongoose.model('User');
 
 module.exports = function(app) {
     app.use('/', router);
@@ -48,6 +48,11 @@ router.post('/user/signup', function(req, res, next) {
     });
 });
 
+// show signup
+router.get('/signup', function showSignup(req, res, next) {
+    res.render('pages/signup', {title: '注册页面'});
+});
+
 // signin
 router.post('/user/signin', function(req, res, next) {
     var _user = req.body.user;
@@ -61,7 +66,7 @@ router.post('/user/signin', function(req, res, next) {
             throw err;
 
         if (!user)
-            return res.redirect('/');
+            return res.redirect('/signup');
 
         user.comparePassword(password, function(err, isMatch) {
             if (err)
@@ -70,11 +75,17 @@ router.post('/user/signin', function(req, res, next) {
             if (isMatch) {
                 req.session.user = user;
                 return res.redirect('/');
-            } else
+            } else {
+                return res.redirect('/signin');
                 console.log('Password is not matched');
             }
-        );
+        });
     });
+});
+
+// show signin
+router.get('/signin', function showSignin(req, res, next) {
+    res.render('pages/signin', {title: '登录页面'});
 });
 
 // logout
@@ -85,7 +96,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 // userlist page
-router.get('/admin/userlist', function(req, res, next) {
+router.get('/admin/user/list', function(req, res, next) {
     User.fetch(function(err, users) {
         if (err)
             throw err;
@@ -113,7 +124,7 @@ router.get('/movie/:id', function(req, res, next) {
 });
 
 // admin page
-router.get('/admin/movie', function(req, res, next) {
+router.get('/admin/movie/new', signinRequired, adminRequired, function(req, res, next) {
     res.render('pages/admin', {
         title: 'imooc 后台录入页',
         movie: {
@@ -130,7 +141,7 @@ router.get('/admin/movie', function(req, res, next) {
 });
 
 // admin update movie
-router.get('/admin/update/:id', function(req, res, next) {
+router.get('/admin/movie/update/:id', signinRequired, adminRequired, function(req, res, next) {
     var id = req.params.id;
 
     if (id) {
@@ -144,7 +155,7 @@ router.get('/admin/update/:id', function(req, res, next) {
 });
 
 // admin post movie
-router.post('/admin/movie/new', function(req, res, next) {
+router.post('/admin/movie', signinRequired, adminRequired, function(req, res, next) {
     var id = req.body.movie._id;
     var movieObj = req.body.movie;
     var _movie;
@@ -184,7 +195,7 @@ router.post('/admin/movie/new', function(req, res, next) {
 });
 
 // list page
-router.get('/admin/list', function(req, res, next) {
+router.get('/admin/movie/list', signinRequired, adminRequired, function(req, res, next) {
     Movie.fetch(function(err, movies) {
         if (err)
             throw err;
@@ -194,10 +205,10 @@ router.get('/admin/list', function(req, res, next) {
             movies: movies
         });
     });
-})
+});
 
 // list delete movie
-router.delete('/admin/list', function(req, res, next) {
+router.delete('/admin/movie/list', signinRequired, adminRequired, function(req, res, next) {
     var id = req.query.id;
 
     if (id) {
@@ -210,4 +221,25 @@ router.delete('/admin/list', function(req, res, next) {
             res.json({success: 1});
         });
     }
-})
+});
+
+// midware for user
+function signinRequired(req, res, next) {
+    var user = req.session.user;
+
+    if (!user) {
+        return res.redirect('/signin');
+    }
+
+    next();
+}
+
+function adminRequired(req, res, next) {
+    var user = req.session.user;
+
+    if (user.role <= 10) {
+        return res.redirect('/signin');
+    }
+
+    next();
+}
