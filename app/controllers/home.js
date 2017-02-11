@@ -2,7 +2,8 @@ var express = require('express'),
     router = express.Router(),
     mongoose = require('mongoose'),
     Movie = mongoose.model('Movie'),
-    User = mongoose.model('User');
+    User = mongoose.model('User'),
+    Comment = mongoose.model('Comment');
 
 module.exports = function(app) {
     app.use('/', router);
@@ -116,10 +117,17 @@ router.get('/movie/:id', function(req, res, next) {
         if (err)
             throw err;
 
-        res.render('pages/detail', {
-            title: 'imooc ' + movie.title,
-            movie: movie
-        });
+        Comment
+            .find({movie: id})
+            .populate('from', 'name')
+            .populate('reply.from reply.to', 'name')
+            .exec(function (err, comments) {
+                res.render('pages/detail', {
+                    title: 'imooc ' + movie.title,
+                    movie: movie,
+                    comments: comments
+                });
+            })
     });
 });
 
@@ -219,6 +227,39 @@ router.delete('/admin/movie/list', signinRequired, adminRequired, function(req, 
                 throw err;
 
             res.json({success: 1});
+        });
+    }
+});
+
+router.post('/user/comment', signinRequired, function(req, res, next) {
+    var _comment = req.body.comment;
+    var movieId = _comment.movie;
+
+    if (_comment.cid) {
+        Comment.findById(_comment.cid, function(err, comment) {
+            var reply = {
+                from: _comment.from,
+                to: _comment.tid,
+                content: _comment.content
+            }
+
+            comment.reply.push(reply);
+
+            comment.save(function(err, data) {
+                if (err)
+                    throw err;
+
+                res.redirect('/movie/' + movieId);
+            })
+        });
+    } else {
+        var comment = new Comment(_comment);
+
+        comment.save(function(err, comment) {
+            if (err)
+                throw err;
+
+            res.redirect('/movie/' + movieId);
         });
     }
 });
