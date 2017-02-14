@@ -2,19 +2,12 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.Types.ObjectId;
 
-var MovieSchema = new Schema({
-    doctor: String,
-    title: String,
-    language: String,
-    country: String,
-    summary: String,
-    flash: String,
-    poster: String,
-    year: Number,
-    category: {
+var CategorySchema = new Schema({
+    name: String,
+    movies: [{
         type: ObjectId,
-        ref: 'Category'
-    },
+        ref: 'Movie'
+    }],
     meta: {
         createAt: {
             type: Date,
@@ -28,7 +21,7 @@ var MovieSchema = new Schema({
 });
 
 // 保存前执行的相关逻辑
-MovieSchema.pre('save', function(next) {
+CategorySchema.pre('save', function(next) {
     if (this.isNew) {
         this.meta.createAt = this.meta.updateAt = Date.now();
     } else {
@@ -39,7 +32,7 @@ MovieSchema.pre('save', function(next) {
     next();
 });
 
-MovieSchema.statics = {
+CategorySchema.statics = {
     fetch: function(cb) {
         return this
             .find({})
@@ -55,4 +48,4 @@ MovieSchema.statics = {
     }
 };
 
-mongoose.model('Movie', MovieSchema);
+mongoose.model('Category', CategorySchema);
