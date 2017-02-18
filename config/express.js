@@ -4,6 +4,7 @@ var glob = require('glob');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var multiparty = require('connect-multiparty')();
 var session = require('express-session');
 var mongoStore = require('connect-mongo')(session);
 var bodyParser = require('body-parser');
@@ -25,6 +26,7 @@ module.exports = function(app, config) {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(cookieParser());
+    app.use(multiparty);
     app.use(session({
         secret: 'imooc',
         resave: false,

@@ -53,10 +53,14 @@ router.get('/movie/update/:id', midware.signinRequired, midware.adminRequired, f
 });
 
 // admin post movie
-router.post('/movie', midware.signinRequired, midware.adminRequired, function(req, res, next) {
+router.post('/movie', midware.signinRequired, midware.adminRequired, midware.savePoster, function(req, res, next) {
     var id = req.body.movie._id;
     var movieObj = req.body.movie;
     var _movie;
+
+    if (req.poster) {
+        movieObj.poster = req.poster;
+    }
 
     if (id) {
         Movie.findById(id, function(err, movie) {

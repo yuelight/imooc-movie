@@ -46,6 +46,11 @@ router.get('/logout', function(req, res, next) {
 router.get('/movie/:id', function(req, res, next) {
     var id = req.params.id;
 
+    Movie.update({_id: id}, {$inc: {pv: 1}}, function (err) {
+        if (err)
+            throw err;
+    });
+
     Movie.findById(id, function(err, movie) {
         if (err)
             throw err;
